@@ -7,7 +7,7 @@
 // ==/ClosureCompiler==
 
 /**
-*@license Chess Replayer 1.1.1
+*@license Chess Replayer 1.1.2
 * 
 * Copyright (c) 2012 Andrew Hoy.  All rights reserved.
 * 
@@ -1413,6 +1413,7 @@ var DEBUG = true;
                 // since the move wasn't a piece move, it was a pawn move
                 var trank = null;
                 var tfile = null;
+                var startSquare = null;
                 var transitions = [];
                 var movingColor = this.game.colorToMove == 1 ? 'w' : 'b';
 
@@ -1430,6 +1431,7 @@ var DEBUG = true;
 
                     if (this.game.position[minusOneStartSquare] == (movingColor + 'p')) {
                         // yes, we moved forward one square!
+                        startSquare = minusOneStartSquare;
                         //TODO check if it was a legal move
                         transitions = ['m:' + minusOneStartSquare + ':' + (trank * 16 + tfile).toString()];
 
@@ -1513,6 +1515,7 @@ var DEBUG = true;
                     }
 
                     // regular capture, remove the piece at the to square and make the move
+                    startSquare = minusOneRank * 16 + ffile;
                     transitions = [
                         'r:' + (trank * 16 + tfile).toString() + ':' + this.game.position[(trank * 16 + tfile)],
                         'm:' + (minusOneRank * 16 + ffile).toString() + ':' + (trank * 16 + tfile).toString()
@@ -1526,9 +1529,22 @@ var DEBUG = true;
 
                 // finally, check to see if we queened
                 if (this.regex.pawnPromoSuffix.test(move.move)) {
-                    var promoPiece = this.regex.pawnPromoSuffix[1];
-                    console_log("Promotion to " + promoPiece);
-                    console_log("[Replayer][Error] Promotions not yet implemented!");
+                    var promoPiece = this.regex.pawnPromoSuffix.exec(move.move)[1];
+                    var colorOnMove = (this.game.colorToMove == 1) ? 'w' : 'b';
+                    var strToSquare = (trank * 16 + tfile).toString();
+
+                    // we will replace the 'move' transition with a 'promo' transition
+                    // first remove the existing move transition
+                    var newTransitions = [];
+                    for (var i = 0; i < transitions.length; i++) {
+                        var pieces = transitions[i].split(':');
+                        if (pieces[0] != 'm') {
+                            newTransitions.push(transitions[i]);
+                        }
+                    }
+                    // now insert a promotion transition
+                    newTransitions.push('p:' + strToSquare + ':' + startSquare.toString() + ':' + colorOnMove + ':' + promoPiece.toLowerCase());
+                    transitions = newTransitions;
                 }
 
                 return transitions;
@@ -1639,6 +1655,15 @@ var DEBUG = true;
                             // update en passant
                             this.game.enPassant = pieces[1];
                             break;
+
+                        case 'p':
+                            // pawn promotion
+                            // two parts: 1) remove pawn, 2) add promo piece
+                            // pieces (1) toSquare (2) startSquare (3) color (4) promoPiece
+                            this.removePiece(pieces[2]);
+                            this.addPiece(pieces[1], pieces[3] + pieces[4]);
+                            break;
+
                     }
                 }
 
@@ -1689,6 +1714,16 @@ var DEBUG = true;
                         case 'e':
                             // do nothing in the reverse direction, en passant is set from the parent move
                             break;
+
+                        case 'p':
+                            // undo a promotion
+                            // two parts: 1) remove piece, 2) add back the pawn
+                            // pieces (1) toSquare (2) startSquare (3) color (4) promoPiece
+                            // remove the piece
+                            this.removePiece(pieces[1]);
+                            this.addPiece(pieces[2], pieces[3] + 'p');
+                            break;
+
                     }
 
                 }
