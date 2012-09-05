@@ -1,0 +1,26 @@
+# Ignore all
+*
+
+# Except html, md files
+!*.html
+!*.txt
+!*.md
+!.gitignore
+
+# Include js directory
+!js/
+js/*
+!js/*.js
+
+# Include css directory
+!css/
+css/*
+!css/*
+
+# Include images directory
+!images/
+images/*
+!images/*
+!images/chess-replayer/
+images/chess-replayer/*
+!images/chess-replayer/*

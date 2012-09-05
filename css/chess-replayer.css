@@ -1,0 +1,341 @@
+﻿.chess-replayer {
+    padding: 10px;
+    border: none;
+    outline: none;
+}
+
+.chess-replayer:after {
+    content: ".";
+    clear: both;
+    display: block;
+    height: 0;
+    visibility: hidden;
+}
+
+.chess-replayer-board {
+    table-layout: fixed;
+    border: none;
+    border-collapse: collapse;
+    border-spacing: 2px;
+    padding: 0px;
+}
+
+.chess-replayer .board {
+    float: left;
+    padding-right: 10px;
+}
+
+.chess-replayer .notes {
+    float: left;
+    height: 70px;
+    overflow-y: auto;
+    width: 100%;
+}
+
+.chess-replayer .moves {
+    width: 100%;
+    height: 360px;
+    overflow-y: auto;
+    padding-top: 1px;
+}
+
+.chess-replayer-board td {
+    text-align: center;
+    padding: 0px;
+    margin: 0px;
+    border: none;
+}
+
+.chess-replayer .modal {
+    background-color: white;
+    border-radius: 10px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    box-shadow: 0 0 20px 0 #222;
+    -webkit-box-shadow: 0 0 20px 0 #222;
+    -moz-box-shadow: 0 0 20px 0 #222;
+    display: block;
+    padding: 10px;
+    position: absolute;
+    width: 120px;
+    z-index: 1000;
+}
+
+.chess-replayer .modal ul {
+    border: 1px solid black;
+    padding: 5px;
+    list-style: none;
+    margin: 0;
+}
+
+.chess-replayer .modal ul li {
+    padding: 2px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.chess-replayer .modal ul li.selected {
+    background-color: #0066ff;
+    color: white;
+}
+
+.chess-replayer .board .wb-small {
+    background: transparent url(../images/chess-replayer/small.png);
+    background-position: 0 -270px;
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .wk-small {
+    background: transparent url(../images/chess-replayer/small.png);
+    background-position: 0 -315px;
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .wn-small {
+    background: transparent url(../images/chess-replayer/small.png);
+    background-position: 0 -360px;
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .wp-small {
+    background: transparent url(../images/chess-replayer/small.png);
+    background-position: 0 -405px;
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .wq-small {
+    background: transparent url(../images/chess-replayer/small.png);
+    background-position: 0 -450px;
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .wr-small {
+    background: transparent url(../images/chess-replayer/small.png);
+    background-position: 0 -495px;
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .bb-small {
+    background: transparent url(../images/chess-replayer/small.png);
+    background-position: 0 0;
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .bk-small {
+    background: transparent url(../images/chess-replayer/small.png);
+    background-position: 0 -45px;
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .bn-small {
+    background: transparent url(../images/chess-replayer/small.png);
+    background-position: 0 -90px;
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .bp-small {
+    background: transparent url(../images/chess-replayer/small.png);
+    background-position: 0 -135px;
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .bq-small {
+    background: transparent url(../images/chess-replayer/small.png);
+    background-position: 0 -180px;
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .br-small {
+    background: transparent url(../images/chess-replayer/small.png);
+    background-position: 0 -225px;
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .wp-medium {
+    background: transparent url(../images/chess-replayer/wp.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .wr-medium {
+    background: transparent url(../images/chess-replayer/wr.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .wn-medium {
+    background: transparent url(../images/chess-replayer/wn.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .wb-medium {
+    background: transparent url(../images/chess-replayer/wb.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .wq-medium {
+    background: transparent url(../images/chess-replayer/wq.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .wk-medium {
+    background: transparent url(../images/chess-replayer/wk.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .bp-medium {
+    background: transparent url(../images/chess-replayer/bp.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .br-medium {
+    background: transparent url(../images/chess-replayer/br.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .bn-medium {
+    background: transparent url(../images/chess-replayer/bn.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .bb-medium {
+    background: transparent url(../images/chess-replayer/bb.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .bq-medium {
+    background: transparent url(../images/chess-replayer/bq.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .bk-medium {
+    background: transparent url(../images/chess-replayer/bk.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .wp-large {
+    background: transparent url(../images/chess-replayer/wp.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .wr-large {
+    background: transparent url(../images/chess-replayer/wr.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .wn-large {
+    background: transparent url(../images/chess-replayer/wn.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .wb-large {
+    background: transparent url(../images/chess-replayer/wb.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .wq-large {
+    background: transparent url(../images/chess-replayer/wq.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .wk-large {
+    background: transparent url(../images/chess-replayer/wk.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .bp-large {
+    background: transparent url(../images/chess-replayer/bp.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .br-large {
+    background: transparent url(../images/chess-replayer/br.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .bn-large {
+    background: transparent url(../images/chess-replayer/bn.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .bb-large {
+    background: transparent url(../images/chess-replayer/bb.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .bq-large {
+    background: transparent url(../images/chess-replayer/bq.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .bk-large {
+    background: transparent url(../images/chess-replayer/bk.gif);
+    background-repeat: no-repeat;
+}
+
+.chess-replayer .board .ui-draggable-dragging {
+    z-index: 100;
+    cursor: pointer;
+}
+
+.chess-replayer .moves .move {
+    cursor: pointer;
+    padding: 1px;
+    white-space: nowrap;
+}
+
+.chess-replayer .moves .move0 {
+    font-weight: bold;
+}
+
+.chess-replayer .moves .move2 {
+    font-style: italic;
+}
+
+.chess-replayer .moves .active {
+    background: #ffff00;
+    border: 1px solid #000000;
+    padding: 0px;
+}
+
+.chess-replayer .controls {
+    clear: left;
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+.chess-replayer .controls a.button, .chess-replayer .controls a.button:visited {
+    font-size: 12px;
+    color: #777;
+    line-height: 1.1;
+    margin-right: 5px;
+    padding: 6px 9px;
+    background: linear-gradient(top, #ffffff, #e7e7e7);
+    background: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#e7e7e7));
+    background: -moz-linear-gradient(top, #ffffff, #e7e7e7);
+    background: linear-gradient(top, #ffffff, #e7e7e7);
+    border: 1px solid #d2d2d2;
+    -moz-box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    text-shadow: 0 1px 0 #fff;
+    font-family: Arial, Helvetica, sans-serif;
+    text-decoration: none;
+    -moz-border-radius: 15px;
+    -webkit-border-radius: 15px;
+    border-radius: 15px;
+}
+
+.chess-replayer .controls a.button:hover, .chess-replayer .controls a.button:hover {
+    color: #444;
+    background: #e7e7e7;
+}
+
+.chess-replayer .controls a.button:active {
+    background-color: #e0e0e0;
+    -moz-box-shadow: 0 2px 2px rgba(0,0,0,0.3) inset, 0 1px 0 #fff;
+    -webkit-box-shadow: 0 2px 2px rgba(0,0,0,0.3) inset, 0 1px 0 #fff;
+    box-shadow: 0 2px 2px rgba(0,0,0,0.3) inset, 0 1px 0 #fff;
+    color: #444!important;
+    text-shadow: none;
+    border: none;
+    padding: 7px 10px;
+}
