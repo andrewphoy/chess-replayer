@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset='utf-8' />
+<meta name="description" content="Chess Replayer : A javascript chess replayer implemented as a jQuery plugin " />
+
+<link rel="stylesheet" type="text/css" media="screen" href="css/stylesheet.css">
+<link rel="stylesheet" type="text/css" href="css/chess-replayer.css" />
+<script type="text/javascript" src="js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="js/jquery.chess-replayer.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function () {
+    $('.chess').replayer({
+        size: 'small',
+        lightColor: "#F0F0FF",
+        darkColor: "#00BB99"
+    });
+});
+</script>
+
+<title>Chess Replayer</title>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div id="header_wrap" class="outer">
+<header class="inner">
+<a id="forkme_banner" href="https://github.com/andrewphoy/chess-replayer">View on GitHub</a>
+
+<h1 id="project_title"><a href="index.html">Chess Replayer</a></h1>
+<h2 id="project_tagline">A javascript chess replayer implemented as a jQuery plugin</h2>
+
+<section id="downloads">
+<a class="zip_download_link" href="https://github.com/andrewphoy/chess-replayer/zipball/master">Download this project as a .zip file</a>
+<a class="tar_download_link" href="https://github.com/andrewphoy/chess-replayer/tarball/master">Download this project as a tar.gz file</a>
+</section>
+</header>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main_content_wrap" class="outer">
+<section id="main_content" class="inner">
+
+<h2>Overview</h2>
+<p>jquery.chess-replayer is a jQuery plugin that displays a complete chess game.  It supports variations and annotations.</p>
+<p>jquery.chess-replayer was designed to be as easy as possible to use.  <a href="usage.html">Complete usage information</a></p>
+
+<h2>Examples</h2>
+<h4>Morphy vs the Duke of Brunswick and Count Isouard</h4>
+<div class="chess">
+1. e4 e5 2. Nf3 d6 3. d4 Bg4 4. dxe5 Bxf3 5. Qxf3 dxe5 6. Bc4 Nf6
+7. Qb3 Qe7 8. Nc3 c6 9. Bg5 b5 10. Nxb5 cxb5 11. Bxb5+ Nbd7 12. O-O-O Rd8
+13. Rxd7 Rxd7 14. Rd1 Qe6 15. Bxd7+ Nxd7 16. Qb8+ Nxb8 17. Rd8#
+</div>
+
+<h4>Setup from FEN header in the pgn</h4>
+<div class="chess">
+[Event "Summer Swiss"]
+[Site "Sven Brask Chess Club"]
+[Date "2011.07.27"]
+[Round "?"]
+[White "Larry"]
+[Black "Andrew"]
+[Result "0-1"]
+[FEN "5rk1/p4p2/1p2r2p/2p2Rp1/3b2P1/1P1P3P/P1PR3B/7K b - - 0 1"]
+[PlyCount "7"]
+
+1... Re1+ 2. Kg2 Be3 3. Rff2 (3. Bg3 Rg1+ 4. Kh2 (4. Kf3 Bxd2) 4... Rxg3 5.
+Kxg3 Bxd2) 3... Bxf2 4. Kxf2 Rfe8 0-1
+</div>
+
+</section>
+</div>
+
+<!-- FOOTER  -->
+<div id="footer_wrap" class="outer">
+<footer class="inner">
+<p class="copyright">Chess Replayer maintained by <a href="https://github.com/andrewphoy">andrewphoy</a></p>
+<p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+</footer>
+</div>
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-34585077-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+</body>
+</html>

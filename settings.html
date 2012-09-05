@@ -1,0 +1,94 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset='utf-8' />
+<meta name="description" content="Chess Replayer : A javascript chess replayer implemented as a jQuery plugin " />
+<link rel="stylesheet" type="text/css" media="screen" href="css/stylesheet.css">
+<title>Settings - Chess Replayer</title>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div id="header_wrap" class="outer">
+<header class="inner">
+<a id="forkme_banner" href="https://github.com/andrewphoy/chess-replayer">View on GitHub</a>
+
+<h1 id="project_title"><a href="index.html">Chess Replayer</a></h1>
+<h2 id="project_tagline">A javascript chess replayer implemented as a jQuery plugin</h2>
+
+<section id="downloads">
+<a class="zip_download_link" href="https://github.com/andrewphoy/chess-replayer/zipball/master">Download this project as a .zip file</a>
+<a class="tar_download_link" href="https://github.com/andrewphoy/chess-replayer/tarball/master">Download this project as a tar.gz file</a>
+</section>
+</header>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main_content_wrap" class="outer">
+<section id="main_content" class="inner">
+
+<h2>Settings</h2>
+
+<p>List of available settings and a brief description:</p>
+
+<ul>
+<li>
+<p><strong>fen</strong>: {fen string}<br />
+The FEN string for the starting position<br />
+Will be overwritten by a FEN in the pgn<br />
+(<em>ex. "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"</em>)</p>
+</li>
+<li>
+<p><strong>size</strong>: {enum: small, medium, large}<br />
+The size of the replayer board (<em>ex. "small"</em>)</p>
+</li>
+<li>
+<p><strong>lightColor</strong>: {hex color}<br />
+The desired color for the light squares (<em>ex. "#CCCCCC"</em>)
+</p>
+</li>
+<li>
+<p><strong>darkColor</strong>: {hex color}<br />
+The desired color for the dark squares (<em>ex. "#999999"</em>)</p>
+</li>
+<li>
+<p><strong>boardOnly</strong>: {boolean}</p>
+</li>
+<li>
+<p><strong>scrollOnEnd</strong>: {boolean}<br />
+Should additional mouse wheel scrolling when the game is at the start/end move the page?</p>
+</li>
+<li>
+<p><strong>startFlipped</strong>: {boolean}<br />
+Should the board start flipped?<br />
+If this is omitted and black is the first to move in the pgn, then it will flip by default</p>
+</li>
+</ul>
+
+</section>
+</div>
+
+<!-- FOOTER  -->
+<div id="footer_wrap" class="outer">
+<footer class="inner">
+<p class="copyright">Chess Replayer maintained by <a href="https://github.com/andrewphoy">andrewphoy</a></p>
+<p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+</footer>
+</div>
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-34585077-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+</body>
+</html>
