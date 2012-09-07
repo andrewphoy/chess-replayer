@@ -1233,7 +1233,7 @@ var DEBUG = true;
             var $moveSpan = $('#' + this.elem.id + 'move' + move.moveID.toString());
             $moveSpan.toggleClass('active');
             
-            if (move.moveID > 0) {
+            if (move.moveID > 0 && !this.settings["boardOnly"]) {
                 var movePositionTop = $moveSpan.position().top;
                 var moveHeight = $moveSpan.height();
 
