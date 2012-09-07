@@ -2,12 +2,13 @@
 
 // ==ClosureCompiler==
 // @output_file_name jquery.chess-replayer.min.js
+// @warning_level VERBOSE
 // @compilation_level ADVANCED_OPTIMIZATIONS
 // @externs_url http://closure-compiler.googlecode.com/svn/trunk/contrib/externs/jquery-1.7.js
 // ==/ClosureCompiler==
 
 /**
-*@license Chess Replayer 1.1.2
+*@license Chess Replayer 1.1.3
 * 
 * Copyright (c) 2012 Andrew Hoy.  All rights reserved.
 * 
@@ -1229,7 +1230,29 @@ var DEBUG = true;
             this.setNotes(move.comment);
             // turn off the existing highlighted move
             $('.active', this.elem).toggleClass('active');
-            $('#' + this.elem.id + 'move' + move.moveID.toString()).toggleClass('active');
+            var $moveSpan = $('#' + this.elem.id + 'move' + move.moveID.toString());
+            $moveSpan.toggleClass('active');
+            
+            if (move.moveID > 0) {
+                var movePositionTop = $moveSpan.position().top;
+                var moveHeight = $moveSpan.height();
+
+                if (movePositionTop < moveHeight) {
+                    var moveUpDelta = moveHeight - movePositionTop;
+                    var curScrollTop = this.movesElement().scrollTop();
+                    if (curScrollTop > moveUpDelta) {
+                        this.movesElement().scrollTop(curScrollTop - moveUpDelta);
+                    } else {
+                        if (curScrollTop > 0) {
+                            this.movesElement().scrollTop(0);
+                        }
+                    }
+                }
+                if ((movePositionTop + moveHeight) > this.movesElement().height()) {
+                    var moveDownDelta = movePositionTop + moveHeight - this.movesElement().height();
+                    this.movesElement().scrollTop(this.movesElement().scrollTop() + moveDownDelta);
+                }
+            }
         },
 
         isSliding: function (piece) {
