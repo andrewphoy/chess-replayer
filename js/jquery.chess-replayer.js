@@ -8,7 +8,7 @@
 // ==/ClosureCompiler==
 
 /**
-*@license Chess Replayer 1.1.3
+*@license Chess Replayer 1.1.4
 *
 * Copyright (c) 2012 Andrew Hoy
 * 
@@ -997,17 +997,27 @@ var DEBUG = true;
             var newTop;
             var newLeft;
 
-            divBoard.children('.chess-piece').each(function () {
-                curTop = parseInt($(this).css('top'), 10) - shiftTop;
-                curLeft = parseInt($(this).css('left'), 10) - shiftLeft;
+            var game = this;
 
-                newLeft = (flipLength - curLeft) + shiftLeft;
-                newTop = (flipLength - curTop) + shiftTop;
+            // check to see if animations are currently running
+            var animationCheck = setInterval(function () {
+	            if(!$('.chess-piece', divBoard).is(":animated") ) {
+	                clearInterval(animationCheck);
 
-                $(this).css({ position: 'absolute', top: newTop, left: newLeft });
-            });
+                    // once the animations are done, flip the board
+                    divBoard.children('.chess-piece').each(function () {
+                        curTop = parseInt($(this).css('top'), 10) - shiftTop;
+                        curLeft = parseInt($(this).css('left'), 10) - shiftLeft;
 
-            this.board.direction *= -1;
+                        newLeft = (flipLength - curLeft) + shiftLeft;
+                        newTop = (flipLength - curTop) + shiftTop;
+
+                        $(this).css({ position: 'absolute', top: newTop, left: newLeft });
+                    });
+
+                    game.board.direction *= -1;
+	            }
+            }, 100);
         },
 
         moveInitialPosition: function () {
