@@ -260,6 +260,7 @@ var DEBUG = true;
             "lightColor": "#CCCCCC",
             "darkColor": "#999999",
             "boardOnly": false,
+            "hideAnnotations": false,
             "scrollOnEnd": false,
             "startFlipped": false
         },
@@ -485,7 +486,7 @@ var DEBUG = true;
         },
 
         setNotes: function (notes) {
-            if (this.settings["boardOnly"]) {
+            if (this.settings["boardOnly"] || this.settings["hideAnnotations"]) {
                 return;
             }
             this.notesElement().html(notes);
@@ -918,7 +919,7 @@ var DEBUG = true;
                 this.$elem.append('<div class="controls"></div>');
             }
 
-            if (!this.settings["boardOnly"]) {
+            if (!this.settings["boardOnly"] && !this.settings["hideAnnotations"]) {
                 if (this.notesElement().size() == 0) {
                     this.$elem.append('<div class="notes"></div>');
                 }
