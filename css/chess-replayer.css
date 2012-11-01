@@ -27,7 +27,7 @@
 
 .chess-replayer .notes {
     float: left;
-    height: 70px;
+    height: 120px;
     overflow-y: auto;
     width: 100%;
 }
