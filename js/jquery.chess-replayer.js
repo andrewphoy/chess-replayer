@@ -241,7 +241,9 @@ var DEBUG = true;
             "size": "small",     // supports small, medium, large
             "lightColor": "#CCCCCC",
             "darkColor": "#999999",
+            "startPly": false,
             "boardOnly": false,
+            "hideControls": false,
             "hideAnnotations": false,
             "scrollOnEnd": false,
             "startFlipped": false
@@ -550,6 +552,10 @@ var DEBUG = true;
             /// <summary>
             /// Returns a header from the game if it exists, null otherwise
             /// </summary>
+            if (this.settings["headers"] == null) {
+                return null;
+            }
+
             var keyClean = key.toLowerCase();
             if (this.settings["headers"].hasOwnProperty(keyClean)) {
                 return this.settings["headers"][keyClean];
@@ -663,7 +669,7 @@ var DEBUG = true;
                 }
                 firstPly = ply;
             }
-
+            
             if (firstPly > 0) {
                 this.extractMoves(dt, 0, firstPly, pgnBody);
             }
@@ -686,7 +692,6 @@ var DEBUG = true;
         labelVariations: function (pgnBody) {
             var i = 0;
             var hasVariations = true;
-            var checkPattern = /\(/;
             var pattern = /\(([^(]*?)\)/g;
 
             while (hasVariations) {
@@ -695,7 +700,7 @@ var DEBUG = true;
                 }
 
                 hasVariations = false;
-                if (pgnBody.match(checkPattern)) {
+                if (pgnBody.match(pattern)) {
                     hasVariations = true;
                     i = i + 1;
                 }
@@ -897,8 +902,11 @@ var DEBUG = true;
                 }
             }
 
-            if (this.controlsElement().size() == 0) {
-                this.$elem.append('<div class="controls"></div>');
+
+            if (!this.settings["hideControls"]) {
+                if (this.controlsElement().size() == 0) {
+                    this.$elem.append('<div class="controls"></div>');
+                }
             }
 
             if (!this.settings["boardOnly"] && !this.settings["hideAnnotations"]) {
@@ -1017,12 +1025,63 @@ var DEBUG = true;
             }
 
             // if we did not explicitly say 'no flip' and black is the first to move, flip
-            if (!("startFlipped" in this.userSettings) && this.game.colorToMove == -1) {
-                needsFlipping = true;
+            if (!("startFlipped" in this.userSettings)) {
+                if (this.game.colorToMove == -1) {
+                    needsFlipping = true;
+                }
+
+                // if we have a pgn tag StartFlipped, use that instead
+                var headerFlipped = this.getHeader("StartFlipped");
+                if (headerFlipped != null) {
+                    if (headerFlipped.toLowerCase() == 'true' || headerFlipped == '1') {
+                        needsFlipping = true;
+                    } else {
+                        needsFlipping = false;
+                    }
+                }
+            }
+
+            // if we have a header StartPly or a setting startPly, advance to that ply (or the end of the game, whichever comes first)
+            var startPly = 0;
+            if ("startPly" in this.userSettings) {
+                // the html/js always overrides the pgn
+                var x = parseInt(this.userSettings["startPly"], 10);
+                if (x != null && x > 0) {
+                    startPly = x;
+                }
+            } else {
+                var x = parseInt(this.getHeader("StartPly"), 10);
+                if (x != null && x > 0) {
+                    startPly = x;
+                }
             }
 
             if (needsFlipping) {
                 this.flipBoard();
+            }
+
+            if (startPly > 0) {
+                // get the first ply of the initial move
+                var rootMove = this.game.moves[0];
+                var firstMoveID = rootMove.children[rootMove.children.length - 1];
+                var firstPly = this.game.moves[firstMoveID].ply;
+
+                if (firstPly < startPly) {
+                    // can't start before the first move
+                    
+                    // we shouldn't have a game longer than 250 moves
+                    // if it is, please give us a starting position...
+                    var counter = 0;
+                    var currPly = 0;
+                    var move = rootMove;
+                    while (move != null && move.children.length > 0 && currPly < startPly && counter < 500) {
+                        // make the last child move
+                        var lastChildID = move.children[move.children.length - 1];
+                        this.execMoveForward(lastChildID);
+                        move = this.game.moves[lastChildID];
+                        currPly = move.ply;
+                    }
+                }
             }
         },
 

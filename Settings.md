@@ -18,6 +18,12 @@ The desired color for the dark squares (*ex. "#999999"*)
 
  - **boardOnly**: {boolean}
 
+ - **hideAnnotations**: {boolean}
+ Set to true if you do not want to see the notes pane
+
+ - **hideControls**: {boolean}
+ Addition by Stack Exchange - hides the controls (useful if you are just setting up from a fen string)
+
  - **scrollOnEnd**: {boolean}  
 Should additional mouse wheel scrolling when the game is at the start/end move the page?
 
