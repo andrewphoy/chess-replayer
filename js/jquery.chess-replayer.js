@@ -221,6 +221,7 @@ var DEBUG = true;
             startingPly: 0, // used in displayStartPosition()
             whiteKingPosition: -1,
             blackKingPosition: -1,
+            hasAnnotations: false,
 
             // each move is an object, keyed by moveID
             moves: []
@@ -245,6 +246,7 @@ var DEBUG = true;
             "boardOnly": false,
             "hideControls": false,
             "hideAnnotations": false,
+            "showAnnotations": false,
             "scrollOnEnd": false,
             "startFlipped": false
         },
@@ -735,6 +737,9 @@ var DEBUG = true;
                     while (comment.charAt(comment.length - 1) === '}') {
                         comment = comment.slice(0, -1);
                     }
+                    if (comment.length > 0) {
+                        this.game.hasAnnotations = true;
+                    }
                 }
 
                 dt.currentMoveID++;
@@ -784,6 +789,9 @@ var DEBUG = true;
                     }
                     while (comment.charAt(comment.length - 1) === '}') {
                         comment = comment.slice(0, -1);
+                    }
+                    if (comment.length > 0) {
+                        this.game.hasAnnotations = true;
                     }
                 }
 
@@ -910,7 +918,7 @@ var DEBUG = true;
             }
 
             if (!this.settings["boardOnly"] && !this.settings["hideAnnotations"]) {
-                if (this.notesElement().size() == 0) {
+                if (this.notesElement().size() == 0 && (this.game.hasAnnotations || this.settings["showAnnotations"])) {
                     this.$elem.append('<div class="notes"></div>');
                 }
             }
