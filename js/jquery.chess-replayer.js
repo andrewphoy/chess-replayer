@@ -218,7 +218,6 @@ var DEBUG = true;
             enPassant: '',
             currentPly: 0,
             position: [],
-            startingPly: 0, // used in displayStartPosition()
             whiteKingPosition: -1,
             blackKingPosition: -1,
             hasAnnotations: false,
