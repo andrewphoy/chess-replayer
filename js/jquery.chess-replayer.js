@@ -25,7 +25,7 @@ var DEBUG = true;
             console.log(args);
         }
     };
-    
+
     /**
     * @constructor
     */
@@ -317,12 +317,12 @@ var DEBUG = true;
             this.$elem.keydown(function (e) {
                 if (e.which == 39) {
                     // right arrow
-                    game.moveForward();
+                    game.moveForward(false);
                     return false;
 
                 } else if (e.which == 37) {
                     // left arrow
-                    game.moveBackward();
+                    game.moveBackward(false);
                     return false;
 
                 } else if (e.which == 40 && game.board.displayingVariationBox) {
@@ -378,10 +378,10 @@ var DEBUG = true;
                 var wheelDelta = (-e.originalEvent.detail) || e.wheelDelta || e.originalEvent.wheelDelta;
                 var handled = false;
                 if (wheelDelta > 0) {
-                    handled = game.moveBackward();
+                    handled = game.moveBackward(false);
                 }
                 else {
-                    handled = game.moveForward();
+                    handled = game.moveForward(false);
                 }
                 if (handled) {
                     e.preventDefault();
@@ -390,12 +390,12 @@ var DEBUG = true;
             });
 
             $('.next', this.elem).click(function () {
-                game.moveForward();
+                game.moveForward(false);
                 return false;
             });
 
             $('.back', this.elem).click(function () {
-                game.moveBackward();
+                game.moveBackward(false);
                 return false;
             });
 
@@ -670,7 +670,7 @@ var DEBUG = true;
                 }
                 firstPly = ply;
             }
-            
+
             if (firstPly > 0) {
                 this.extractMoves(dt, 0, firstPly, pgnBody);
             }
@@ -999,8 +999,8 @@ var DEBUG = true;
 
             // check to see if animations are currently running
             var animationCheck = setInterval(function () {
-	            if(!$('.chess-piece', divBoard).is(":animated") ) {
-	                clearInterval(animationCheck);
+                if (!$('.chess-piece', divBoard).is(":animated")) {
+                    clearInterval(animationCheck);
 
                     // once the animations are done, flip the board
                     divBoard.children('.chess-piece').each(function () {
@@ -1014,7 +1014,7 @@ var DEBUG = true;
                     });
 
                     game.board.direction *= -1;
-	            }
+                }
             }, 100);
         },
 
@@ -1075,7 +1075,7 @@ var DEBUG = true;
 
                 if (firstPly < startPly) {
                     // can't start before the first move
-                    
+
                     // we shouldn't have a game longer than 250 moves
                     // if it is, please give us a starting position...
                     var counter = 0;
@@ -1084,7 +1084,7 @@ var DEBUG = true;
                     while (move != null && move.children.length > 0 && currPly < startPly && counter < 500) {
                         // make the last child move
                         var lastChildID = move.children[move.children.length - 1];
-                        this.execMoveForward(lastChildID);
+                        this.execMoveForward(lastChildID, true);
                         move = this.game.moves[lastChildID];
                         currPly = move.ply;
                     }
@@ -1094,7 +1094,7 @@ var DEBUG = true;
 
         moveStartPosition: function () {
             while (this.game.currentPly > 0) {
-                this.moveBackward();
+                this.moveBackward(true);
             }
         },
 
@@ -1137,7 +1137,7 @@ var DEBUG = true;
             // now we have the common ancestor
             // go back to the common ancestor from the current node
             while (this.game.currentMoveID > commonAncestor) {
-                this.moveBackward();
+                this.moveBackward(true);
             }
 
             // are we there now?
@@ -1147,7 +1147,7 @@ var DEBUG = true;
 
             // now move forward along the targetStack until we get to the targetMoveID
             while (this.game.currentMoveID < targetMoveID) {
-                this.execMoveForward(targetStack[i]);
+                this.execMoveForward(targetStack[i], true);
                 i++;
             }
         },
@@ -1161,12 +1161,12 @@ var DEBUG = true;
             while (move != null && move.children.length > 0) {
                 // make the last child move
                 var lastChildID = move.children[move.children.length - 1];
-                this.execMoveForward(lastChildID);
+                this.execMoveForward(lastChildID, true);
                 move = this.game.moves[lastChildID];
             }
         },
 
-        moveForward: function () {
+        moveForward: function (instant) {
             var lastMove = this.game.moves[this.game.currentMoveID];
 
             if (lastMove.children.length == 0) {
@@ -1181,7 +1181,7 @@ var DEBUG = true;
                     moveID = lastMove.children[this.board.modalSelectedIndex];
                     this.closeVariationBox();
                 }
-                this.execMoveForward(moveID);
+                this.execMoveForward(moveID, instant);
                 return true;
 
             } else {
@@ -1226,7 +1226,7 @@ var DEBUG = true;
             $('.modal li', this.elem).click(function (e) {
                 var idx = parseInt($(e.target).attr('class'), 10);
                 game.board.modalSelectedIndex = idx;
-                game.moveForward();
+                game.moveForward(false);
             });
 
             this.board.displayingVariationBox = true;
@@ -1254,7 +1254,7 @@ var DEBUG = true;
             $("." + this.board.modalSelectedIndex, '.modal').toggleClass('selected');
         },
 
-        execMoveForward: function (moveID) {
+        execMoveForward: function (moveID, instant) {
             if (moveID != null) {
 
                 var move = this.game.moves[moveID];
@@ -1263,7 +1263,7 @@ var DEBUG = true;
                 this.selectMove(move);
 
                 // now execute the animations for the targetMove
-                this.executeMove(move, 1);
+                this.executeMove(move, 1, instant);
 
                 // and finally, update the game state
                 this.game.currentPly++;
@@ -1272,7 +1272,7 @@ var DEBUG = true;
             }
         },
 
-        moveBackward: function () {
+        moveBackward: function (instant) {
             if (this.board.displayingVariationBox) {
                 // close the variation popup because we are moving backward
                 this.closeVariationBox();
@@ -1288,7 +1288,7 @@ var DEBUG = true;
                 //this.setNotes(this.game.moves[parentMoveID].comment);
 
                 // execute the reverse transitions
-                this.executeMove(lastMove, -1);
+                this.executeMove(lastMove, -1, instant);
 
                 // and finally, update the game state
                 this.game.currentPly--;
@@ -1306,7 +1306,7 @@ var DEBUG = true;
             $('.active', this.elem).toggleClass('active');
             var $moveSpan = $('#' + this.elem.id + 'move' + move.moveID.toString());
             $moveSpan.toggleClass('active');
-            
+
             if (move.moveID > 0 && !this.settings["boardOnly"]) {
                 var movePositionTop = $moveSpan.position().top;
                 var moveHeight = $moveSpan.height();
@@ -1719,7 +1719,11 @@ var DEBUG = true;
             return false;
         },
 
-        executeMove: function (move, direction) {
+        executeMove: function (move, direction, instant) {
+            if (typeof (instant) === 'undefined') {
+                instant = false;
+            }
+
             if (direction > 0) {
                 // if we don't have transitions for this move, calculate them based on the position
                 if (move.transitions == null || move.transitions.length == 0) {
@@ -1737,7 +1741,7 @@ var DEBUG = true;
 
                     switch (pieces[0]) {
                         case 'm':
-                            this.movePiece(pieces[1], pieces[2]);
+                            this.movePiece(pieces[1], pieces[2], instant);
                             break;
 
                         case 'a':
@@ -1796,7 +1800,7 @@ var DEBUG = true;
                     switch (pieces[0]) {
                         case 'm':
                             // move in the reverse direction
-                            this.movePiece(pieces[2], pieces[1]);
+                            this.movePiece(pieces[2], pieces[1], instant);
                             break;
 
                         case 'a':
@@ -1871,7 +1875,7 @@ var DEBUG = true;
             this.game.position[square] = null;
         },
 
-        movePiece: function (from, to) {
+        movePiece: function (from, to, instant) {
             // move the DOM element
             var oldDivId = this.elem.id + from;
             var newDivId = this.elem.id + to;
@@ -1879,10 +1883,17 @@ var DEBUG = true;
 
             var top = (Math.floor(to / 16) - Math.floor(from / 16)) * size * this.board.direction;
             var left = ((from % 16) - (to % 16)) * size * this.board.direction;
-            $('#' + oldDivId).animate({
-                'top': '+=' + top + 'px',
-                'left': '+=' + left + 'px'
-            }, 'fast');
+            if (instant) {
+                $('#' + oldDivId).css({
+                    'top': '+=' + top + 'px',
+                    'left': '+=' + left + 'px'
+                });
+            } else {
+                $('#' + oldDivId).animate({
+                    'top': '+=' + top + 'px',
+                    'left': '+=' + left + 'px'
+                }, 'fast');
+            }
 
             // update the piece's ID
             $('#' + oldDivId).attr('id', newDivId);
