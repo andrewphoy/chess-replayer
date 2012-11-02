@@ -21,10 +21,10 @@ The desired color for the dark squares (*ex. "#999999"*)
  - **hideAnnotations**: {boolean}
  Set to true if you do not want to see the notes pane
 
-  - **showAnnotations**: {boolean}
- Set to true if you do want the notes pane to appear whether or not there are comments.
- (usually if there are no comments, the notes pane is not visible)
- hideAnnotations overrides showAnnotations
+ - **showAnnotations**: {boolean}
+ Set to true if you do want the notes pane to appear whether or not there are comments.  
+ (usually if there are no comments, the notes pane is not visible)  
+ hideAnnotations overrides showAnnotations  
 
  - **hideControls**: {boolean}
  Addition by Stack Exchange - hides the controls (useful if you are just setting up from a fen string)
