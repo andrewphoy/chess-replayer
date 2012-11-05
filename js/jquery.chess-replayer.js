@@ -8,7 +8,7 @@
 // ==/ClosureCompiler==
 
 /**
-*@license Chess Replayer 1.1.4
+*@license Chess Replayer 1.1.5
 * Copyright (c) 2012 Andrew Hoy
 * http://github.com/andrewphoy/chess-replayer
 * MIT License
