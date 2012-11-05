@@ -1587,7 +1587,7 @@ var DEBUG = true;
                     var minusOneRank = trank - (1 * this.game.colorToMove);
 
                     // was it an en passant capture?
-                    if (this.game.enPassant == tfile) {
+                    if (this.game.enPassant === tfile.toString(10)) {
                         // we are on the correct file, now we need to check to see if we're moving to the proper square
                         var remSquare = null;
 
