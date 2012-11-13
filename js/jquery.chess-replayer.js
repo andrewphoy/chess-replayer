@@ -217,9 +217,12 @@ var DEBUG = true;
             colorToMove: 1,
             enPassant: '',
             currentPly: 0,
+            halfMoveCount: 0,
             position: [],
             whiteKingPosition: -1,
             blackKingPosition: -1,
+            whiteCastling: 'KQ',
+            blackCastling: 'kq',
             hasAnnotations: false,
 
             // each move is an object, keyed by moveID
@@ -228,7 +231,9 @@ var DEBUG = true;
 
         // define a board class - used after parsing
         this.board = {
+            displayingContextMenu: false,
             displayingVariationBox: false,
+            displayingCopyPasteBox: false,
             modalNumOptions: 0,
             modalSelectedIndex: 0,
             direction: -1       // direction of the board.  -1 is standard, 1 is black perspective
@@ -238,11 +243,13 @@ var DEBUG = true;
     Replayer.prototype = {
         defaults: {
             "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",    // the fen string for the starting position
+            "fenOnly": false,
             "size": "small",     // supports small, medium, large
             "lightColor": "#CCCCCC",
             "darkColor": "#999999",
             "startPly": false,
             "boardOnly": false,
+            "hideTitle": false,
             "hideControls": false,
             "hideAnnotations": false,
             "showAnnotations": false,
@@ -258,14 +265,14 @@ var DEBUG = true;
 
         shift: {
             left: {
-                SMALL: 13,
-                MEDIUM: 21,
-                LARGE: 31
+                SMALL: 3,
+                MEDIUM: 10,
+                LARGE: 20
             },
             top: {
-                SMALL: 12,
-                MEDIUM: 20,
-                LARGE: 28
+                SMALL: 2,
+                MEDIUM: 8,
+                LARGE: 20
             }
         },
 
@@ -273,7 +280,7 @@ var DEBUG = true;
             // this is a regex for the allowable suffix of a move
             suffix: "((?:\\s*\\$\\d+)*)(\\s*\\{[^\\}]*\\})*",
 
-            gameTermMarker: /(1-0|0-1|1\/2-1\/2|\*)$/g,
+            gameTermMarker: /(0-1|1-0|1\/2-1\/2|\*)\s*$/,
 
             commentLeftParen: /\{([^}]*?)(\()(.*?)\}/g,
             commentRightParen: /\{([^}]*?)(\))(.*?)\}/g,
@@ -303,7 +310,7 @@ var DEBUG = true;
             this.settings = $.extend({}, this.defaults, this.options, this.metadata);
 
             this.cleanSettings();
-            this.parseInput();          // parses 1) url (if given) 2) pgn (if available) 3) fen in that order
+            this.parseInput();          // parses 1) fen (if only fen string is given) 2) pgn (if available) 3) fen in that order
             this.printBoard();
             this.printMoves();          // displays the moves from the pgn in the moves pane
             this.addPieces();
@@ -315,6 +322,8 @@ var DEBUG = true;
             var game = this;
 
             this.$elem.keydown(function (e) {
+
+
                 if (e.which == 39) {
                     // right arrow
                     game.moveForward(false);
@@ -367,6 +376,8 @@ var DEBUG = true;
 
                 } else if (e.which == 27) {
                     // Esc key
+                    game.closeContextMenu();
+                    game.closeCopyPasteBox();
                     game.closeVariationBox();
                     return false;
                 }
@@ -423,6 +434,11 @@ var DEBUG = true;
                 }
                 return false;
             });
+
+            $('.arrow', this.elem).click(function () {
+                game.showContextMenu();
+                return false;
+            });
         },
 
         cleanSettings: function () {
@@ -458,6 +474,10 @@ var DEBUG = true;
             return this.$elem.find('.board');
         },
 
+        titleElement: function () {
+            return this.$elem.find('.title');
+        },
+
         controlsElement: function () {
             return this.$elem.find('.controls');
         },
@@ -485,6 +505,111 @@ var DEBUG = true;
             } else {
                 return this.size.MEDIUM;
             }
+        },
+
+        closeContextMenu: function () {
+            $(document).unbind('click.replayer');
+            $('.context-menu', this.elem).unbind('click');
+            $('.context-menu', this.elem).remove();
+            this.board.displayingContextMenu = false;
+        },
+
+        showContextMenu: function () {
+            if (this.board.displayingContextMenu) {
+                this.closeContextMenu();
+
+            } else {
+                var html = '<div class="modal context-menu"><ul><li class="game">Copy Game</li><li class="pos">Copy Position</li><li class="startpos">Copy Start Position</li></ul>';
+
+                var arrowElem = $('.arrow', this.elem);
+                arrowElem.append(html);
+
+                this.board.displayingContextMenu = true;
+
+                // now decide on style for the element
+                var leftPos = this.squareSizePixels() * 8;
+                $('.context-menu', this.elem).css({
+                    top: 10,
+                    left: 25,
+                    'font-size': 'small'
+                });
+
+
+                var game = this;
+                $('.context-menu ul li', this.elem).click(function (e) {
+                    var c = $(this).attr("class");
+                    e.stopPropagation();
+                    game.closeContextMenu();
+                    switch (c) {
+                        case 'game':
+                            game.showCopyPasteBox('Copy this pgn to your computer', game.settings["pgn"]);
+                            break;
+                        case 'pos':
+                            game.showCopyPasteBox('Copy this FEN to your computer', game.getCurrentFEN());
+                            break;
+                        case 'startpos':
+                            game.showCopyPasteBox('Copy this FEN to your computer', game.settings["fen"]);
+                            break;
+                        default:
+                            break;
+                    }
+                });
+
+                $('.context-menu', this.elem).click(function (e) {
+                    return false;
+                });
+
+
+                $(document).bind('click.replayer', function (e) {
+                    game.closeContextMenu();
+                    $(this).unbind(e);
+                });
+            }
+        },
+
+        closeCopyPasteBox: function () {
+            $(document).unbind('click.replayer');
+            $('.copy-paste', this.elem).remove();
+            this.board.displayingCopyPasteBox = false;
+        },
+
+        showCopyPasteBox: function (directions, text) {
+            if (this.board.displayingCopyPasteBox) {
+                this.closeCopyPasteBox();
+            }
+
+            var html = '<div class="modal copy-paste"><p>' + directions + '</p><textarea>' + text + '</textarea><button>Done</button></div>';
+
+            this.boardElement().append(html);
+            this.board.displayingCopyPasteBox = true;
+
+            // now decide on style for the element
+            var w = 430;
+            var h = 300;
+            $('.copy-paste', this.elem).css({
+                position: 'fixed',
+                left: (window.screen.width / 2) - (w / 2),
+                top: (window.screen.height / 2) - (h / 2),
+                width: w,
+                height: h
+            });
+
+            $('.copy-paste textarea', this.elem).select();
+
+            var game = this;
+
+            $('.copy-paste', this.elem).click(function (e) {
+                return false;
+            });
+
+            $('.copy-paste button', this.elem).click(function (e) {
+                game.closeCopyPasteBox();
+            });
+
+            $(document).bind('click.replayer', function (e) {
+                game.closeCopyPasteBox();
+                $(this).unbind(e);
+            });
         },
 
         printMoves: function () {
@@ -565,31 +690,82 @@ var DEBUG = true;
             }
         },
 
+        getTitle: function (lineBreaks) {
+            /// <summary>
+            /// Returns a title for the game displayed from the PGN tags
+            /// </summary>
+            var pgnTitle = this.getHeader("Title");
+            if (pgnTitle != null) {
+                return pgnTitle;
+            }
+
+            if (this.settings["fenOnly"]) {
+                return null;
+            }
+
+            var sep = (lineBreaks == true) ? "<br />" : ", ";
+
+            var white = this.getHeader("White") || "NN";
+            var black = this.getHeader("Black") || "NN";
+            var eventName = this.getHeader("Event");
+            var date = this.getHeader("Date") || this.getHeader("EventDate") || this.getHeader("UTCDate");
+
+            var fullTitle = white + " - " + black;
+
+            // append the event name if we know it
+            if (eventName != null && eventName !== "?") {
+                fullTitle += sep + eventName;
+            }
+
+            // append the date
+            if (date != null && date.length > 0) {
+                fullTitle += sep + date.replace(/\./g, '-');
+            }
+
+            // and finally append the result
+            if (this.game.result != null && this.game.result.length > 0) {
+                fullTitle += sep + this.game.result;
+            } else {
+                console_log('no result');
+            }
+
+            return fullTitle;
+        },
+
         parseInput: function () {
             // get the contents of the target div
             var content = $.trim(this.$elem.html());
 
-            //TODO do something smart with the content
-            this.settings["pgn"] = content;
+            if (this.validateFEN(content)) {
+                // we have only a fen string, show only a board
+                this.settings["fen"] = content;
 
-            if (this.settings["url"]) {
-                this.parseUrl();
-            }
-            if (this.settings["pgn"]) {
-                this.parsePgn();
-            }
+                // hide the moves, annotations, and controls
+                this.settings["boardOnly"] = true;
+                this.settings["hideControls"] = true;
+                this.settings["hideAnnotations"] = true;
+                this.settings["fenOnly"] = true;
 
-            // now parse the fen (in order to have the initial display)
-            this.parseFEN();
+                // give the replayer a dummy root move
+                this.game.moves = this.prepareMoveTable().array;
+
+                this.parseFEN();
+
+            } else {
+                this.settings["pgn"] = content;
+
+                if (this.settings["pgn"]) {
+                    this.parsePgn();
+                }
+
+                // now parse the fen (in order to have the initial display)
+                this.parseFEN();
+            }
         },
 
         validateFEN: function (fen) {
-            var pattern = /\s*([rnbqkpRNBQKP1-8]+\/){7}([rnbqkpRNBQKP1-8]+)\s[bw-]\s(([a-hkqA-HKQ]{1,4})|(-))\s(([a-h][36])|(-))\s\d+\s\d+\s*/;
+            var pattern = /^\s*([rnbqkpRNBQKP1-8]+\/){7}([rnbqkpRNBQKP1-8]+)\s[bw-]\s(([a-hkqA-HKQ]{1,4})|(-))\s(([a-h][36])|(-))\s\d+\s\d+\s*$/;
             return pattern.test(fen);
-        },
-
-        parseUrl: function () {
-
         },
 
         parsePgn: function () {
@@ -605,8 +781,8 @@ var DEBUG = true;
                 // if we start with a bracket, we assume there are headers
                 var parts = pgn.split("\n\n");
 
-                if (parts.length != 2) {
-                    console_log('Invalid pgn, must have only header and body');
+                if (parts.length < 2) {
+                    console_log('Invalid pgn, must have at least header and body');
                 } else {
                     var re = /\[([\w\d]+)\s+"(.*?)"/g;
                     var match;
@@ -617,8 +793,14 @@ var DEBUG = true;
                     }
 
                     this.settings["headers"] = headers;
+
                     // remove the headers before we continue
-                    pgn = parts[1];
+                    if (parts.length > 2) {
+                        parts.splice(0, 1);
+                        pgn = parts.join(' ');
+                    } else {
+                        pgn = parts[1];
+                    }
 
                     // if we have a fen, set this.settings["fen"]
                     var headerFen = this.getHeader('fen');
@@ -848,7 +1030,6 @@ var DEBUG = true;
             //var squares = [];
             var offset = 112;
             var ixChar = 0;
-
             for (var col = 0; col < 8; col++) {
                 ixChar = 0;
                 for (var i = 0; i < 8; i++) {
@@ -889,6 +1070,89 @@ var DEBUG = true;
             // 5) fullmove number
         },
 
+        getCurrentFEN: function () {
+            var fenString = this.getCurrentPieceFEN();
+            return fenString;
+            //// add the other game data
+            //fenString += " ";
+
+            //// add the side to move
+            //fenString += (this.game.colorToMove == 1) ? 'w' : 'b';
+
+            //fenString += " ";
+
+            //// castling
+            //if (this.game.whiteCastling === '' && this.game.blackCastling === '') {
+            //    fenString += '-';
+            //} else {
+            //    if (this.game.whiteCastling !== '') {
+            //        fenString += this.game.whiteCastling;
+            //    }
+            //    if (this.game.blackCastling !== '') {
+            //        fenString += this.game.blackCastling;
+            //    }
+            //}
+
+            //fenString += " ";
+
+            //// en passant
+            //if (this.game.enPassant === '') {
+            //    fenString += "-";
+            //} else {
+            //    fenString += 'abcdefgh'.charAt(this.game.enPassant);
+            //    fenString += (this.game.colorToMove == 1) ? '6' : '3';
+            //}
+
+            //// move counters
+            //fenString += " " + this.game.halfMoveCount.toString();
+            //fenString += " " + Math.ceil((this.game.currentPly + 1) / 2).toString();
+
+            //return fenString;
+        },
+
+        getCurrentPieceFEN: function () {
+            var fenString = '';
+
+            var index = 112;
+            var empties = 0;
+
+            while(index >= 0) {
+                if((index & 0x88) > 0) {
+                    // we are not on the board anymore
+                    if(empties > 0) {
+                        fenString += empties.toString(10);
+                        empties = 0;
+                    }
+
+                    index -= 24; // go down a rank and back 8 squares
+                    if(index >= 0) {
+                        fenString += '/';
+                    }
+                } else {
+                    // on the board
+                    if(this.game.position[index] != null && this.game.position[index].length > 0) {
+                        // if we had a span of empties, write out the count
+                        if(empties > 0) {
+                            fenString += empties.toString();
+                            empties = 0;
+                        }
+
+                        // write out the piece
+                        var piece = this.game.position[index];
+                        var fenPiece = (piece.charAt(0) == 'w') ? piece.charAt(1).toUpperCase() : piece.charAt(1).toLowerCase();
+                        fenString += fenPiece;
+                    } else {
+                        empties++;
+                    }
+
+                    index++;
+                }
+
+            }
+
+            return fenString;
+        },
+      
         printBoard: function () {
             /// <summary>
             /// Called at game load time
@@ -899,8 +1163,25 @@ var DEBUG = true;
 
             this.$elem.attr("tabindex", -1);
 
+            if (!this.settings["hideTitle"]) {
+                if (this.titleElement().size() == 0) {
+                    var title = this.getTitle(false);
+
+                    if (title != null && title.length > 0) {
+                        this.$elem.append('<div class="title"></div>');
+                        this.titleElement().html(title);
+                        this.titleElement().append('<div class="arrow" />');
+                    }
+                }
+            }
+
             if (this.boardElement().size() == 0) {
                 this.$elem.append('<div class="board"></div>').css({ position: 'relative' });
+
+                // if we aren't showing annotations for whatever reason, shrink the width of the parent div
+                if (this.settings["boardOnly"] || this.settings["hideAnnotations"]) {
+                    this.$elem.width(this.squareSizePixels() * 8);
+                }
             }
 
             if (!this.settings["boardOnly"]) {
@@ -908,7 +1189,6 @@ var DEBUG = true;
                     this.$elem.append('<div class="moves"></div>');
                 }
             }
-
 
             if (!this.settings["hideControls"]) {
                 if (this.controlsElement().size() == 0) {
@@ -1202,8 +1482,10 @@ var DEBUG = true;
 
         displayVariationBox: function (parentMove) {
             // see also http://jsfiddle.net/9UnKT/5/
-            // append the html to the board element
-            var id = this.elem.id + 'modal';
+
+            if (this.board.displayingContextMenu) {
+                this.closeContextMenu();
+            }
 
             var numChoices = parentMove.children.length;
 
