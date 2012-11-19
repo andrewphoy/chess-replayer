@@ -8,7 +8,7 @@
 // ==/ClosureCompiler==
 
 /**
-*@license Chess Replayer 1.1.5
+*@license Chess Replayer 1.1.6
 * Copyright (c) 2012 Andrew Hoy
 * http://github.com/andrewphoy/chess-replayer
 * MIT License
@@ -542,7 +542,7 @@ var DEBUG = true;
                     game.closeContextMenu();
                     switch (c) {
                         case 'game':
-                            game.showCopyPasteBox('Copy this pgn to your computer', game.settings["pgn"]);
+                            game.showCopyPasteBox('Copy this pgn to your computer', game.getValidPGN());
                             break;
                         case 'pos':
                             game.showCopyPasteBox('Copy this FEN to your computer', game.getCurrentFEN());
@@ -787,11 +787,14 @@ var DEBUG = true;
                     var re = /\[([\w\d]+)\s+"(.*?)"/g;
                     var match;
                     var headers = {};
+                    var rawHeaders = {};
 
                     while (match = re.exec(parts[0])) {
+                        rawHeaders[match[1]] = match[2];
                         headers[match[1].toLowerCase()] = match[2];
                     }
 
+                    this.settings["rawHeaders"] = rawHeaders;
                     this.settings["headers"] = headers;
 
                     // remove the headers before we continue
@@ -813,6 +816,7 @@ var DEBUG = true;
             }
 
             var pgnBody = pgn;
+            this.settings["pgnBody"] = pgnBody;
             var dt = this.prepareMoveTable();
 
             // the pgn spec (http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm)
@@ -1070,6 +1074,45 @@ var DEBUG = true;
             // 5) fullmove number
         },
 
+        getValidPGN: function () {
+            /// <summary>
+            /// Returns the complete pgn for the game starting with the STR
+            /// </summary>
+
+            // we shouldn't actually need this as there is no way to get the pgn without a title bar
+            if (!!this.settings["fenOnly"]) {
+                return "";
+            }
+
+            var pgn = "";
+
+            // start with the seven tag roster
+            var strElems = ['Event', 'Site', 'Date', 'Round', 'White', 'Black', 'Result'];
+
+            for (var i = 0; i < 7; i++) {
+                var value = this.getHeader(strElems[i]);
+                if (value == null || value.length == 0) {
+                    value = "?";
+                }
+                pgn += '[' + strElems[i] + ' "' + value + '"]\n';
+            }
+
+            // add any additional headers
+            var allHeaders = this.settings["rawHeaders"];
+            for (var key in allHeaders) {
+                // check to see if we are already included in the seven tag roster
+                if ($.inArray(key, strElems) < 0) {
+                    // if not, write the header to the pgn text
+                    if (allHeaders.hasOwnProperty(key)) {
+                        pgn += '[' + key + ' "' + allHeaders[key] + '"]\n';
+                    }
+                }
+            }
+
+            // append the pgn body
+            return pgn + '\n' + this.settings["pgnBody"];
+        },
+
         getCurrentFEN: function () {
             var fenString = this.getCurrentPieceFEN();
             return fenString;
@@ -1116,23 +1159,23 @@ var DEBUG = true;
             var index = 112;
             var empties = 0;
 
-            while(index >= 0) {
-                if((index & 0x88) > 0) {
+            while (index >= 0) {
+                if ((index & 0x88) > 0) {
                     // we are not on the board anymore
-                    if(empties > 0) {
+                    if (empties > 0) {
                         fenString += empties.toString(10);
                         empties = 0;
                     }
 
                     index -= 24; // go down a rank and back 8 squares
-                    if(index >= 0) {
+                    if (index >= 0) {
                         fenString += '/';
                     }
                 } else {
                     // on the board
-                    if(this.game.position[index] != null && this.game.position[index].length > 0) {
+                    if (this.game.position[index] != null && this.game.position[index].length > 0) {
                         // if we had a span of empties, write out the count
-                        if(empties > 0) {
+                        if (empties > 0) {
                             fenString += empties.toString();
                             empties = 0;
                         }
@@ -1152,7 +1195,7 @@ var DEBUG = true;
 
             return fenString;
         },
-      
+
         printBoard: function () {
             /// <summary>
             /// Called at game load time
@@ -1447,6 +1490,15 @@ var DEBUG = true;
         },
 
         moveForward: function (instant) {
+            // close a copy paste box or the context menu if they are visible
+            if (this.board.displayingContextMenu) {
+                this.closeContextMenu();
+            }
+
+            if (this.board.displayingCopyPasteBox) {
+                this.closeCopyPasteBox();
+            }
+
             var lastMove = this.game.moves[this.game.currentMoveID];
 
             if (lastMove.children.length == 0) {
