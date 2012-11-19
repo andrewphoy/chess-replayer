@@ -1052,7 +1052,7 @@ var DEBUG = true;
                         }
                     } else {
                         // is an empty square
-                        i += ((+charNext) - 1);
+                        i += Math.max((+charNext) - 1, 1);
                     }
                     ixChar++;
                 }
