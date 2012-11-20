@@ -2,6 +2,7 @@
     padding: 10px;
     border: none;
     outline: none;
+    position: relative;
 }
 
 .chess-replayer:after {
@@ -28,6 +29,7 @@
     padding: 4px;
     font-weight: bold;
     font-size: large;
+    line-height: 1.2;
 }
 
 .chess-replayer .arrow {

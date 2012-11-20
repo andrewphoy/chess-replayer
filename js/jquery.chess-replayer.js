@@ -515,22 +515,28 @@ var DEBUG = true;
             }
 
             if (this.game.hasDrawings) {
-                if (!instant) {
-                    // wait until animations finish
-                    var game = this;
-                    var animationCheck = setInterval(function () {
-                        if (!$('.chess-piece', game.boardElement()).is(":animated")) {
-                            clearInterval(animationCheck);
+                //if (!instant) {
+                //    // wait until animations finish
+                //    var game = this;
+                //    var animationCheck = setInterval(function () {
+                //        if (!$('.chess-piece', game.boardElement()).is(":animated")) {
+                //            clearInterval(animationCheck);
 
-                            // once the animations are done, draw media annotations
-                            notes = game.drawMediaAnnotations(notes);
-                            game.notesElement().html(notes);
-                        }
-                    }, 100);
-                } else {
-                    notes = this.drawMediaAnnotations(notes);
-                    this.notesElement().html(notes);
-                }
+                //            // once the animations are done, draw media annotations
+                //            notes = game.drawMediaAnnotations(notes);
+                //            game.notesElement().html(notes);
+                //        }
+                //    }, 100);
+                //} else {
+                //    notes = this.drawMediaAnnotations(notes);
+                //    this.notesElement().html(notes);
+                //}
+
+                // while I would like to delay the media until the animations are done,
+                // this leads to some subtle bugs with the remove firing *before* the media has painted
+                // yielding a position with erroneous media drawings
+                notes = this.drawMediaAnnotations(notes);
+                this.notesElement().html(notes);
 
             } else {
                 this.notesElement().html(notes);
@@ -1090,7 +1096,10 @@ var DEBUG = true;
                         comment = comment.slice(0, -1);
                     }
                     if (comment.length > 0) {
-                        this.game.hasAnnotations = true;
+                        // is our comment media-only?
+                        if (comment.replace(this.regex.mediaAnnotation, '').length > 0) {
+                            this.game.hasAnnotations = true;
+                        }
                     }
                 }
 
@@ -1143,7 +1152,9 @@ var DEBUG = true;
                         comment = comment.slice(0, -1);
                     }
                     if (comment.length > 0) {
-                        this.game.hasAnnotations = true;
+                        if (comment.replace(this.regex.mediaAnnotation, '').length > 0) {
+                            this.game.hasAnnotations = true;
+                        }
                     }
                 }
 
@@ -1825,7 +1836,9 @@ var DEBUG = true;
             // scroll the moves if needed
             if (move.moveID > 0 && !this.settings["boardOnly"]) {
                 var movePositionTop = $moveSpan.position().top;
+                console_log('movePositionTop: ' + movePositionTop);
                 var moveHeight = $moveSpan.height();
+                console_log('moveHeight: ' + moveHeight);
 
                 if (movePositionTop < moveHeight) {
                     var moveUpDelta = moveHeight - movePositionTop;
@@ -1839,6 +1852,9 @@ var DEBUG = true;
                     }
                 }
                 if ((movePositionTop + moveHeight) > this.movesElement().height()) {
+                    console_log('scrolling down');
+                    console_log('movePositionTop: ' + movePositionTop);
+                    console_log('movesElem height: ' + this.movesElement().height());
                     var moveDownDelta = movePositionTop + moveHeight - this.movesElement().height();
                     this.movesElement().scrollTop(this.movesElement().scrollTop() + moveDownDelta);
                 }
