@@ -8,7 +8,7 @@
 // ==/ClosureCompiler==
 
 /**
-*@license Chess Replayer 1.1.6
+*@license Chess Replayer 1.2.0
 * Copyright (c) 2012 Andrew Hoy
 * http://github.com/andrewphoy/chess-replayer
 * MIT License
@@ -224,6 +224,7 @@ var DEBUG = true;
             whiteCastling: 'KQ',
             blackCastling: 'kq',
             hasAnnotations: false,
+            hasDrawings: false,
 
             // each move is an object, keyed by moveID
             moves: []
@@ -281,6 +282,8 @@ var DEBUG = true;
             suffix: "((?:\\s*\\$\\d+)*)(\\s*\\{[^\\}]*\\})*",
 
             gameTermMarker: /(0-1|1-0|1\/2-1\/2|\*)\s*$/,
+            mediaAnnotation: /\[%draw\s+(.*?)\]/g,
+            mediaPresent: /\[%draw\s+(.*?)\]/,
 
             commentLeftParen: /\{([^}]*?)(\()(.*?)\}/g,
             commentRightParen: /\{([^}]*?)(\))(.*?)\}/g,
@@ -490,11 +493,161 @@ var DEBUG = true;
             return this.$elem.find('.notes');
         },
 
-        setNotes: function (notes) {
+        setAnnotations: function (notes, instant) {
             if (this.settings["boardOnly"] || this.settings["hideAnnotations"]) {
                 return;
             }
-            this.notesElement().html(notes);
+
+            if (this.game.hasDrawings) {
+                // clear any existing annotations
+                $('.media-annotation', this.$elem).remove();
+                var ctx = this.canvasElement();
+                if (ctx !== null) {
+                    var s = this.squareSizePixels() * 8;
+                    ctx.clearRect(0, 0, s, s);
+                }
+            }
+
+            // if it's an empty note, just return immediately
+            if (notes.length == 0) {
+                this.notesElement().html('');
+                return;
+            }
+
+            if (this.game.hasDrawings) {
+                if (!instant) {
+                    // wait until animations finish
+                    var game = this;
+                    var animationCheck = setInterval(function () {
+                        if (!$('.chess-piece', game.boardElement()).is(":animated")) {
+                            clearInterval(animationCheck);
+
+                            // once the animations are done, draw media annotations
+                            notes = game.drawMediaAnnotations(notes);
+                            game.notesElement().html(notes);
+                        }
+                    }, 100);
+                } else {
+                    notes = this.drawMediaAnnotations(notes);
+                    this.notesElement().html(notes);
+                }
+
+            } else {
+                this.notesElement().html(notes);
+            }
+        },
+
+        drawMediaAnnotations: function (notes) {
+            // grab any drawing annotations
+            var drawing;
+
+            while ((drawing = this.regex.mediaAnnotation.exec(notes)) !== null) {
+                var parts = drawing[1].split(',');
+                if (parts.length < 2) {
+                    // we need at least a type and a square
+                    break;
+                }
+
+                var type = parts[0];
+                switch (type) {
+                    case 'full':
+                    case 'square':
+                        if (parts.length >= 2) {
+                            var size = this.squareSizePixels();
+                            var square = parts[1];
+                            if (square.length == 2) {
+                                var left = (square.toLowerCase().charCodeAt(0) - 97) * size;
+                                var top = (8 - parseInt(square.charAt(1), 10)) * size;
+
+                                var color = 'red';
+
+                                if (parts.length > 2) {
+                                    color = parts[2];
+                                }
+
+                                $('<div class="media-annotation" />').appendTo(this.boardElement()).css({
+                                    'background-color': color,
+                                    'width': size,
+                                    'height': size,
+                                    'min-width': size,
+                                    'min-height': size,
+                                    'top': top + 'px',
+                                    'left': left + 'px'
+                                });
+                            }
+                        }
+                        break;
+
+                    case 'arrow':
+                    case 'line':
+                        if (parts.length >= 3) {
+                            var ctx = this.canvasElement();
+                            if (ctx !== null) {
+                                var size = this.squareSizePixels();
+                                ctx.lineWidth = size / 8;
+
+
+                                // figure out the start/end location
+                                var startSquare = parts[1];
+                                var endSquare = parts[2];
+                                if (startSquare.length !== 2 || endSquare.length !== 2) {
+                                    break;
+                                }
+                                var startX = (startSquare.toLowerCase().charCodeAt(0) - 97) * size + (size / 2);
+                                var startY = (8 - parseInt(startSquare.charAt(1), 10)) * size + (size / 2);
+                                var endX = (endSquare.toLowerCase().charCodeAt(0) - 97) * size + (size / 2);
+                                var endY = (8 - parseInt(endSquare.charAt(1), 10)) * size + (size / 2);
+
+                                // now fudge the start/end points for great justice (and easier viewing)
+                                var d = size / 4;
+                                var deltaX = endX - startX;
+                                var deltaY = endY - startY;
+                                var len = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                                var m = d * deltaX / len;
+                                var n = d * deltaY / len;
+
+                                var color = 'red';
+                                if (parts.length > 3) {
+                                    color = parts[3];
+                                }
+                                ctx.strokeStyle = color;
+
+                                ctx.beginPath();
+                                ctx.moveTo(startX + m, startY + n);
+                                ctx.lineTo(endX - 2 * m, endY - 2 * n);
+                                ctx.stroke();
+
+                                // draw the head of the arrow
+                                var angle = Math.atan2(deltaY, deltaX);
+                                var piDivisor = 10.5;
+                                var headLen = 25;
+
+                                ctx.beginPath();
+                                ctx.moveTo(endX - m, endY - n);
+                                ctx.lineTo(endX - m - headLen * Math.cos(angle - Math.PI / piDivisor), endY - n - headLen * Math.sin(angle - Math.PI / piDivisor));
+                                ctx.lineTo(endX - m - headLen * Math.cos(angle + Math.PI / piDivisor), endY - n - headLen * Math.sin(angle + Math.PI / piDivisor));
+                                ctx.fillStyle = color;
+                                ctx.fill();
+                            }
+                        }
+                        break;
+                }
+            }
+
+            // now strip out the drawing annotations
+            notes = notes.replace(this.regex.mediaAnnotation, '');
+            return notes;
+        },
+
+        canvasElement: function () {
+            // get our canvas element
+            var id = this.elem.id + 'canv'
+            var canv = document.getElementById(id);
+            if (canv !== null && !!(canv.getContext && canv.getContext('2d'))) {
+                return canv.getContext('2d');
+            } else {
+                return null;
+            }
         },
 
         squareSizePixels: function () {
@@ -519,6 +672,10 @@ var DEBUG = true;
                 this.closeContextMenu();
 
             } else {
+                if (this.board.displayingCopyPasteBox) {
+                    this.closeCopyPasteBox();
+                }
+
                 var html = '<div class="modal context-menu"><ul><li class="game">Copy Game</li><li class="pos">Copy Position</li><li class="startpos">Copy Start Position</li></ul>';
 
                 var arrowElem = $('.arrow', this.elem);
@@ -534,6 +691,8 @@ var DEBUG = true;
                     'font-size': 'small'
                 });
 
+                // firefox workaround - for some reason, firefox automatically selects all of the text in the context menu
+                document.getSelection().removeAllRanges();
 
                 var game = this;
                 $('.context-menu ul li', this.elem).click(function (e) {
@@ -719,14 +878,18 @@ var DEBUG = true;
 
             // append the date
             if (date != null && date.length > 0) {
-                fullTitle += sep + date.replace(/\./g, '-');
+                // check if it's just question marks...
+                if (!date.match(/^[-?\.]*$/)) {
+                    fullTitle += sep + date.replace(/\./g, '-');
+                }
             }
 
             // and finally append the result
             if (this.game.result != null && this.game.result.length > 0) {
-                fullTitle += sep + this.game.result;
-            } else {
-                console_log('no result');
+                // if the result is only a *, skip it
+                if (this.game.result !== '*') {
+                    fullTitle += sep + this.game.result;
+                }
             }
 
             return fullTitle;
@@ -756,6 +919,10 @@ var DEBUG = true;
 
                 if (this.settings["pgn"]) {
                     this.parsePgn();
+                    // see if we have media annotations
+                    if (this.regex.mediaPresent.test(content)) {
+                        this.game.hasDrawings = true;
+                    }
                 }
 
                 // now parse the fen (in order to have the initial display)
@@ -1219,7 +1386,7 @@ var DEBUG = true;
             }
 
             if (this.boardElement().size() == 0) {
-                this.$elem.append('<div class="board"></div>').css({ position: 'relative' });
+                this.$elem.append('<div class="board"></div>');
 
                 // if we aren't showing annotations for whatever reason, shrink the width of the parent div
                 if (this.settings["boardOnly"] || this.settings["hideAnnotations"]) {
@@ -1268,6 +1435,20 @@ var DEBUG = true;
             this.$elem.addClass("chess-replayer");
 
             divBoard.html(brdStr);
+
+            // if we have media annotations, prepare a canvas
+
+
+            if (!this.settings["boardOnly"] && !this.settings["hideAnnotations"]) {
+                if (this.game.hasDrawings) {
+                    var canvasID = this.elem.id + 'canv';
+                    var fullSize = size * 8;
+                    $('<canvas id="' + canvasID + '" height="' + fullSize + '" width = "' + fullSize + '"></canvas>').appendTo(this.boardElement()).css({
+                        'width': fullSize,
+                        'height': fullSize
+                    });
+                }
+            }
 
             var divControls = this.controlsElement();
             var cntrlStr = '<a class="start button" href="#">|< Start</a><a class="back button" href="#"><< Back</a><a class="flip button" href="#">Flip</a><a class="next button" href="#">Next >></a><a class="end button" href="#">End >|</a>';
@@ -1594,7 +1775,7 @@ var DEBUG = true;
                 var move = this.game.moves[moveID];
 
                 // now display any comments and the move
-                this.selectMove(move);
+                this.selectMove(move, instant);
 
                 // now execute the animations for the targetMove
                 this.executeMove(move, 1, instant);
@@ -1618,8 +1799,7 @@ var DEBUG = true;
                 var parentMoveID = lastMove.parentMoveID;
 
                 // display the last moves comments
-                this.selectMove(this.game.moves[parentMoveID]);
-                //this.setNotes(this.game.moves[parentMoveID].comment);
+                this.selectMove(this.game.moves[parentMoveID], instant);
 
                 // execute the reverse transitions
                 this.executeMove(lastMove, -1, instant);
@@ -1634,13 +1814,15 @@ var DEBUG = true;
             }
         },
 
-        selectMove: function (move) {
-            this.setNotes(move.comment);
+        selectMove: function (move, instant) {
+            this.setAnnotations(move.comment, instant);
+
             // turn off the existing highlighted move
             $('.active', this.elem).toggleClass('active');
             var $moveSpan = $('#' + this.elem.id + 'move' + move.moveID.toString());
             $moveSpan.toggleClass('active');
 
+            // scroll the moves if needed
             if (move.moveID > 0 && !this.settings["boardOnly"]) {
                 var movePositionTop = $moveSpan.position().top;
                 var moveHeight = $moveSpan.height();
