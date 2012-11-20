@@ -2,6 +2,7 @@
     padding: 10px;
     border: none;
     outline: none;
+    position: relative;
 }
 
 .chess-replayer:after {
