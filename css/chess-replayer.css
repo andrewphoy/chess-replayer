@@ -18,9 +18,11 @@
     border-collapse: collapse;
     border-spacing: 2px;
     padding: 0px;
+    z-index: 2;
 }
 
 .chess-replayer .title {
+    position: relative;
     text-align: center;
     background-color: rgba(0,0,0,0.1);
     padding: 4px;
@@ -37,8 +39,8 @@
     text-align: right;
     position: absolute;
     cursor: pointer;
-    right: 10px;
-    top: 10px;
+    right: 0px;
+    top: 0px;
 }
 
 .chess-replayer .arrow:hover {
@@ -70,6 +72,7 @@
     padding: 0px;
     margin: 0px;
     border: none;
+    z-index: 2;
 }
 
 .chess-replayer .modal {
@@ -83,6 +86,7 @@
     -webkit-box-shadow: 0 0 20px 0 #222;
     -moz-box-shadow: 0 0 20px 0 #222;
     display: block;
+    overflow:visible;
     padding: 10px;
     position: absolute;
     width: 120px;
@@ -111,9 +115,28 @@
     color: white;
 }
 
+.chess-replayer .board .media-annotation {
+    z-index: 3;
+    position: absolute;
+    opacity: 0.75;
+}
+
+.chess-replayer .board canvas {
+    z-index: 50;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 11;
+    opacity: 0.85;
+}
+
 .chess-replayer .copy-paste textarea {
     width: 100%;
     height: 200px;
+}
+
+.chess-replayer .board .chess-piece {
+    z-index: 10;
 }
 
 .chess-replayer .board .wb-small {
@@ -306,11 +329,6 @@
 .chess-replayer .board .bk-large {
     background: transparent url(../images/chess-replayer/bk.gif);
     background-repeat: no-repeat;
-}
-
-.chess-replayer .board .ui-draggable-dragging {
-    z-index: 100;
-    cursor: pointer;
 }
 
 .chess-replayer .moves .move {
