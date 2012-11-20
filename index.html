@@ -8,7 +8,7 @@
 <link rel="stylesheet" type="text/css" media="screen" href="css/stylesheet.css">
 <link rel="stylesheet" type="text/css" href="css/chess-replayer.css" />
 <script type="text/javascript" src="js/jquery-1.7.2.min.js"></script>
-<script type="text/javascript" src="js/jquery.chess-replayer-1.1.6.min.js"></script>
+<script type="text/javascript" src="js/jquery.chess-replayer.min.js"></script>
 
 <script type="text/javascript">
 $(document).ready(function () {
@@ -49,13 +49,14 @@ $(document).ready(function () {
 <p>jquery.chess-replayer was designed to be as easy as possible to use.  <a href="usage.html">Complete usage information</a></p>
 
 <h2>Examples</h2>
+
 <h4>Morphy vs the Duke of Brunswick and Count Isouard</h4>
 <div class="chess">
 [Title "Morphy vs the Duke of Brunswick and Count Isouard"]
-[StartPly "24"]
+[StartPly "13"]
 
 1. e4 e5 2. Nf3 d6 3. d4 Bg4 4. dxe5 Bxf3 5. Qxf3 dxe5 6. Bc4 Nf6
-7. Qb3 Qe7 8. Nc3 c6 9. Bg5 b5 10. Nxb5 cxb5 11. Bxb5+ Nbd7 12. O-O-O Rd8
+7. Qb3 {[%draw arrow,b3,f7,green][%draw arrow,b3,b7,green]} Qe7 8. Nc3 c6 9. Bg5 b5 10. Nxb5 cxb5 11. Bxb5+ Nbd7 12. O-O-O Rd8
 13. Rxd7 Rxd7 14. Rd1 Qe6 15. Bxd7+ Nxd7 16. Qb8+ Nxb8 17. Rd8#
 </div>
 
@@ -77,7 +78,7 @@ $(document).ready(function () {
 [EventDate &quot;2011.11.09&quot;]
 [EventCountry &quot;USA&quot;]
 
-1. e4 c5 2. Nf3 $5 Nc6 $1 {John immediately improves over our Week 3 encounter.
+1. e4 $7 c5 $8 2. Nf3 $5 Nc6 $1 {John immediately improves over our Week 3 encounter.
 He now intends to decline my Morra gambit with 3... d3, when Black has a much
 more flexible structure than before, having not committed to e7-e6. He could
 then adopt a Scheveningen, or a Dragon...} 3. d4 cxd4 4. Nxd4 $6 {One question
@@ -179,7 +180,7 @@ www.chesspub.com/cgi-bin/yabb2/YaBB.pl?num=1320893863/7} 1-0
 </div>
 
 <h4>Setup from FEN header in the pgn</h4>
-<div class="chess">
+<div class="chess" data-replayer-options='{"boardOnly":"true"}'>
 [Event "Summer Swiss"]
 [Site "Sven Brask Chess Club"]
 [Date "2011.07.27"]
@@ -194,6 +195,19 @@ www.chesspub.com/cgi-bin/yabb2/YaBB.pl?num=1320893863/7} 1-0
 
 31... Re1+ 32. Kg2 Be3 33. Rff2 Bxf2 34. Rxf2 Rfe8 35. Kf3 R8e3+ 36. Kg2 R1e2
 0-1
+</div>
+
+<h4>Scid Annotation Test</h4>
+<div class="chess">
+[Event "Two Knights Defense"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Two Knights"]
+[Black "4. Ng5"]
+[Result "*"]
+
+1.e4 e5 2.Nf3 Nc6 3.Bc4 Nf6 4.Ng5 $5 {[%draw full,f7,yellow][%draw arrow,c4,f7,green][%draw arrow,g5,f7,green]} *
 </div>
 
 </section>
