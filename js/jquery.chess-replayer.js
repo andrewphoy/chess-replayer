@@ -493,7 +493,7 @@ var DEBUG = true;
             return this.$elem.find('.notes');
         },
 
-        setAnnotations: function (notes, instant) {
+        setAnnotations: function (notes, instant, moveID) {
             if (this.settings["boardOnly"] || this.settings["hideAnnotations"]) {
                 return;
             }
@@ -515,28 +515,25 @@ var DEBUG = true;
             }
 
             if (this.game.hasDrawings) {
-                //if (!instant) {
-                //    // wait until animations finish
-                //    var game = this;
-                //    var animationCheck = setInterval(function () {
-                //        if (!$('.chess-piece', game.boardElement()).is(":animated")) {
-                //            clearInterval(animationCheck);
+                if (!instant) {
+                    // wait until animations finish
+                    var game = this;
+                    var animationCheck = setInterval(function () {
+                        if (!$('.chess-piece', game.boardElement()).is(":animated")) {
+                            clearInterval(animationCheck);
 
-                //            // once the animations are done, draw media annotations
-                //            notes = game.drawMediaAnnotations(notes);
-                //            game.notesElement().html(notes);
-                //        }
-                //    }, 100);
-                //} else {
-                //    notes = this.drawMediaAnnotations(notes);
-                //    this.notesElement().html(notes);
-                //}
+                            // once the animations are done, draw media annotations
+                            if (moveID == game.game.currentMoveID) {
+                                notes = game.drawMediaAnnotations(notes);
+                                game.notesElement().html(notes);
+                            }
+                        }
+                    }, 100);
 
-                // while I would like to delay the media until the animations are done,
-                // this leads to some subtle bugs with the remove firing *before* the media has painted
-                // yielding a position with erroneous media drawings
-                notes = this.drawMediaAnnotations(notes);
-                this.notesElement().html(notes);
+                } else {
+                    notes = this.drawMediaAnnotations(notes);
+                    this.notesElement().html(notes);
+                }
 
             } else {
                 this.notesElement().html(notes);
@@ -1826,7 +1823,7 @@ var DEBUG = true;
         },
 
         selectMove: function (move, instant) {
-            this.setAnnotations(move.comment, instant);
+            this.setAnnotations(move.comment, instant, move.moveID);
 
             // turn off the existing highlighted move
             $('.active', this.elem).toggleClass('active');
@@ -1836,9 +1833,7 @@ var DEBUG = true;
             // scroll the moves if needed
             if (move.moveID > 0 && !this.settings["boardOnly"]) {
                 var movePositionTop = $moveSpan.position().top;
-                console_log('movePositionTop: ' + movePositionTop);
                 var moveHeight = $moveSpan.height();
-                console_log('moveHeight: ' + moveHeight);
 
                 if (movePositionTop < moveHeight) {
                     var moveUpDelta = moveHeight - movePositionTop;
@@ -1852,9 +1847,6 @@ var DEBUG = true;
                     }
                 }
                 if ((movePositionTop + moveHeight) > this.movesElement().height()) {
-                    console_log('scrolling down');
-                    console_log('movePositionTop: ' + movePositionTop);
-                    console_log('movesElem height: ' + this.movesElement().height());
                     var moveDownDelta = movePositionTop + moveHeight - this.movesElement().height();
                     this.movesElement().scrollTop(this.movesElement().scrollTop() + moveDownDelta);
                 }
