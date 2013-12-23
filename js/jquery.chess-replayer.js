@@ -1397,7 +1397,7 @@ var DEBUG = true;
                 this.$elem.append('<div class="board"></div>');
 
                 // if we aren't showing annotations for whatever reason, shrink the width of the parent div
-                if (this.settings["boardOnly"] || this.settings["hideAnnotations"]) {
+                if (this.settings["boardOnly"] && this.settings["hideAnnotations"]) {
                     this.$elem.width(this.squareSizePixels() * 8);
                 }
             }
