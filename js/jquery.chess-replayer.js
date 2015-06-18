@@ -225,6 +225,7 @@ var DEBUG = true;
             blackCastling: 'kq',
             hasAnnotations: false,
             hasDrawings: false,
+			isAtomic: false,
 
             // each move is an object, keyed by moveID
             moves: []
@@ -936,6 +937,10 @@ var DEBUG = true;
                     if (this.regex.mediaPresent.test(content)) {
                         this.game.hasDrawings = true;
                     }
+					// set the atomic chess header
+					if (this.getHeader("Variant") && this.getHeader("Variant").toLowerCase() === "atomic") {
+						this.game.isAtomic = true;
+					}
                 }
 
                 // now parse the fen (in order to have the initial display)
@@ -1931,6 +1936,7 @@ var DEBUG = true;
 
             // first check castling
             // queenside first because of regex considerations
+			var ixOrigin;
             if (this.regex.castleQueenside.test(move.move)) {
                 var rank = (this.game.colorToMove == 1) ? 0 : 7;
                 var kstart = rank * 16 + 4;
@@ -1971,6 +1977,7 @@ var DEBUG = true;
                 var transitions = [];
                 if (possibleOrigins.length == 1) {
                     // simple case, just one move
+					ixOrigin = possibleOrigins[0];
                     transitions = ['m:' + possibleOrigins[0] + ':' + ixEndSquare];
 
                 } else {
@@ -2013,6 +2020,7 @@ var DEBUG = true;
                     }
 
                     if (possibleOrigins.length == 1) {
+						ixOrigin = possibleOrigins[0];
                         transitions = ['m:' + possibleOrigins[0] + ':' + ixEndSquare];
                     } else {
                         // check to see if one (or more) of the possibilities can be removed due to pins
@@ -2027,6 +2035,7 @@ var DEBUG = true;
                         }
 
                         if (pinnedPossibles.length == 1) {
+							ixOrigin = pinnedPossibles[0];
                             transitions = ['m:' + pinnedPossibles[0] + ':' + ixEndSquare];
                         } else {
                             console_log('multiple possible moves, not yet implemented');
@@ -2038,6 +2047,27 @@ var DEBUG = true;
                 // and finally, was it a capture? (hint: remove transition must be first!)
                 if (this.game.position[ixEndSquare] != null) {
                     transitions.splice(0, 0, 'r:' + ixEndSquare + ':' + this.game.position[ixEndSquare].toString());
+
+					// if we are playing atomic chess, we might have to add other transitions
+					if (this.game.isAtomic) {
+						// remove any adjacent pieces (not pawns)
+						var adjacents = $.map(this.deltas.king, function(n, i) { return n + ixEndSquare; });
+						var ixAtomicDelete;
+						var atomicPiece;
+						for (var i = 0; i < adjacents.length; i++) {
+							ixAtomicDelete = adjacents[i];
+							if (!(ixAtomicDelete & 0x88) && this.game.position[ixAtomicDelete] != null) {
+								// make sure it's not a pawn
+								atomicPiece = this.game.position[ixAtomicDelete];
+								if (atomicPiece.toString()[1] !== 'p') {
+									transitions.splice(0, 0, 'r:' + ixAtomicDelete + ':' + atomicPiece.toString());
+								}
+							}
+						}
+
+						// now remove the capturing piece
+						transitions.push('r:' + ixEndSquare + ':' + this.game.position[ixOrigin]);
+					}
                 }
 
                 return transitions;
@@ -2141,6 +2171,34 @@ var DEBUG = true;
                         if (remSquare != null) {
                             var remPiece = this.game.position[remSquare];
                             // return early because we can't queen on an en passant capture
+
+							// if we are playing atomic chess, we might have to add other transitions
+							if (this.game.isAtomic) {
+								// remove any adjacent pieces (not pawns)
+								var adjacents = $.map(this.deltas.king, function(n, i) { return n + remSquare; });
+								var ixAtomicDelete;
+								var atomicPiece;
+								var atomicTransitions = [];
+
+								for (var i = 0; i < adjacents.length; i++) {
+									ixAtomicDelete = adjacents[i];
+									if (!(ixAtomicDelete & 0x88) && this.game.position[ixAtomicDelete] != null) {
+										// make sure it's not a pawn
+										atomicPiece = this.game.position[ixAtomicDelete];
+										if (atomicPiece.toString()[1] !== 'p') {
+											atomicTransitions.push('r:' + ixAtomicDelete + ':' + atomicPiece.toString());
+										}
+									}
+								}
+
+								atomicTransitions.push('r:' + remSquare.toString() + ':' + remPiece);
+								var ixStart = (minusOneRank * 16 + ffile);
+								atomicTransitions.push('m:' + ixStart.toString() + ':' + (trank * 16 + tfile).toString());
+								atomicTransitions.push('r:' + remSquare.toString() + ':' + this.game.position[ixStart]);
+
+								return atomicTransitions;
+							}
+
                             return [
                                 'r:' + remSquare.toString() + ':' + remPiece,
                                 'm:' + (minusOneRank * 16 + ffile).toString() + ':' + (trank * 16 + tfile).toString()
@@ -2151,6 +2209,34 @@ var DEBUG = true;
 
                     // regular capture, remove the piece at the to square and make the move
                     startSquare = minusOneRank * 16 + ffile;
+
+					// if we are playing atomic chess, we might have to add other transitions
+					if (this.game.isAtomic) {
+						var adjacents = $.map(this.deltas.king, function(n, i) { return n + remSquare; });
+						var ixAtomicDelete;
+						var atomicPiece;
+						var atomicTransitions = [];
+
+						for (var i = 0; i < adjacents.length; i++) {
+							ixAtomicDelete = adjacents[i];
+							if (!(ixAtomicDelete & 0x88) && this.game.position[ixAtomicDelete] != null) {
+								// make sure it's not a pawn
+								atomicPiece = this.game.position[ixAtomicDelete];
+								if (atomicPiece.toString()[1] !== 'p') {
+									atomicTransitions.push('r:' + ixAtomicDelete + ':' + atomicPiece.toString());
+								}
+							}
+						}
+
+						var ixDest = trank * 16 + tfile;
+						atomicTransitions.push('r:' + ixDest.toString() + ':' + this.game.position[ixDest]);
+						atomicTransitions.push('m:' + (minusOneRank * 16 + ffile).toString() + ':' + ixDest.toString());
+						atomicTransitions.push('r:' + ixDest.toString() + ':' + this.game.position[(minusOneRank * 16 + ffile)]);
+
+						// if it's an atomic capture, we will never be queening a pawn, so we can return the transitions now
+						return atomicTransitions;
+					}
+						
                     transitions = [
                         'r:' + (trank * 16 + tfile).toString() + ':' + this.game.position[(trank * 16 + tfile)],
                         'm:' + (minusOneRank * 16 + ffile).toString() + ':' + (trank * 16 + tfile).toString()
