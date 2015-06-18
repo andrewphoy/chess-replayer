@@ -551,6 +551,14 @@ var DEBUG = true;
                     break;
                 }
 
+                // these are used for flipping the annotations
+                var subtractYFrom = 8
+                var subtractFromX = 0
+                if (this.board.direction == 1) {
+                    subtractYFrom = 1
+                    subtractFromX = 7
+                }
+
                 var type = parts[0];
                 switch (type) {
                     case 'full':
@@ -559,8 +567,8 @@ var DEBUG = true;
                             var size = this.squareSizePixels();
                             var square = parts[1];
                             if (square.length == 2) {
-                                var left = (square.toLowerCase().charCodeAt(0) - 97) * size;
-                                var top = (8 - parseInt(square.charAt(1), 10)) * size;
+                                var left = (Math.abs(square.toLowerCase().charCodeAt(0) - subtractFromX - 97)) * size;
+                                var top = (Math.abs(subtractYFrom - parseInt(square.charAt(1), 10))) * size;
 
                                 var color = 'red';
 
@@ -596,10 +604,12 @@ var DEBUG = true;
                                 if (startSquare.length !== 2 || endSquare.length !== 2) {
                                     break;
                                 }
-                                var startX = (startSquare.toLowerCase().charCodeAt(0) - 97) * size + (size / 2);
-                                var startY = (8 - parseInt(startSquare.charAt(1), 10)) * size + (size / 2);
-                                var endX = (endSquare.toLowerCase().charCodeAt(0) - 97) * size + (size / 2);
-                                var endY = (8 - parseInt(endSquare.charAt(1), 10)) * size + (size / 2);
+
+                                var startX = (Math.abs(startSquare.toLowerCase().charCodeAt(0) - subtractFromX - 97)) * size + (size / 2);
+                                var startY = (Math.abs(subtractYFrom - parseInt(startSquare.charAt(1), 10))) * size + (size / 2);
+                                var endX = (Math.abs(endSquare.toLowerCase().charCodeAt(0) - subtractFromX - 97)) * size + (size / 2);
+                                var endY = (Math.abs(subtractYFrom - parseInt(endSquare.charAt(1), 10))) * size + (size / 2);
+                                
 
                                 // now fudge the start/end points for great justice (and easier viewing)
                                 var d = size / 4;
@@ -1526,6 +1536,10 @@ var DEBUG = true;
                     });
 
                     game.board.direction *= -1;
+
+                    // draw any annotations again to flip them
+                    var lastMove = game.game.moves[game.game.currentMoveID];
+                    game.setAnnotations(lastMove.comment, true, game.game.currentMoveID)
                 }
             }, 100);
         },
