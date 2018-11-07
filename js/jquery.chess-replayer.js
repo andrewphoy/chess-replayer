@@ -288,8 +288,8 @@ var DEBUG = true;
             commentLeftParen: /\{([^}]*?)(\()(.*?)\}/g,
             commentRightParen: /\{([^}]*?)(\))(.*?)\}/g,
 
-            castleKingside: /^O-O/,
-            castleQueenside: /^O-O-O/,
+            castleKingside: /^O-O|0-0/,
+            castleQueenside: /^O-O-O|0-0-0/,
 
             pieceMove: /^([KQBNR])/,
             pieceDest: /(.*)([a-h])([1-8])/,
